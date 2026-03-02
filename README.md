@@ -1,6 +1,8 @@
 # GBA Emulator
 
-A Game Boy Advance emulator.
+(Need to fix sprite rendering to get this to work fully)
+
+An almost working Game Boy Advance emulator.
 ![Pokemon Emerald gameplay](screenshots/gameplay.png)
 ![Talking](screenshots/dialogue.png)
 ![Battle](screenshots/battle.png)
@@ -33,5 +35,3 @@ make -j$(nproc)
 | S | R |
 | Tab | Turbo |
 | F5 | Save |
-
-(Need to fix sprite rendering to get this to work fully)
