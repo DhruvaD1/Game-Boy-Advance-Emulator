@@ -2,6 +2,8 @@
 
 A Game Boy Advance emulator.
 ![Pokemon Emerald gameplay](screenshots/gameplay.png)
+![Talking](screenshots/dialogue.png)
+![Battle](screenshots/battle.png)
 
 ## Build
 

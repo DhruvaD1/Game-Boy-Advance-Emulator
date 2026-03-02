@@ -1,7 +1,8 @@
 build/
 *.ppm
-*.png
 *.bmp
+frame_*.png
+obj*.png
 *.deb
 *.sav
 *.zip
