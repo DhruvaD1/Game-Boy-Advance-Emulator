@@ -1,0 +1,10 @@
+build/
+*.ppm
+*.png
+*.bmp
+*.deb
+*.sav
+*.zip
+rom/
+tools/headless_test
+tools/sprite_debug
