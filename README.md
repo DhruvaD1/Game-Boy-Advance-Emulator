@@ -2,6 +2,8 @@
 
 (Need to fix sprite rendering to get this to work fully)
 
+Have only tested this in Pokemon Emerald
+
 An almost working Game Boy Advance emulator.
 ![Pokemon Emerald gameplay](screenshots/gameplay.png)
 ![Talking](screenshots/dialogue.png)
