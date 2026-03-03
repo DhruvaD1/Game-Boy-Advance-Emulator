@@ -5,6 +5,7 @@
 #include <SDL.h>
 
 class Bus;
+class DMA;
 
 class APU {
 public:
@@ -12,6 +13,7 @@ public:
     ~APU();
 
     void set_bus(Bus* bus) { bus_ = bus; }
+    void set_dma(DMA* dma) { dma_ = dma; }
 
     void init_audio();
     void shutdown_audio();
@@ -24,6 +26,7 @@ public:
 
 private:
     Bus* bus_ = nullptr;
+    DMA* dma_ = nullptr;
     SDL_AudioDeviceID audio_device_ = 0;
 
     struct FifoChannel {
@@ -34,6 +37,8 @@ private:
         s8 current_sample = 0;
         int timer_id = 0;
         bool enabled = false;
+        bool enable_left = false;
+        bool enable_right = false;
         int volume = 0;
 
         void push(s8 sample) {
@@ -69,6 +74,7 @@ private:
         int duty = 0;
         int volume = 0;
         int envelope_period = 0;
+        int envelope_dir = 0;
         int sweep_period = 0;
         int timer = 0;
         int duty_pos = 0;
@@ -107,19 +113,36 @@ private:
         bool enabled = false;
         int volume = 0;
         int envelope_period = 0;
+        int envelope_dir = 0;
         u16 lfsr = 0x7FFF;
         int timer = 0;
         bool width_7 = false;
+        int dividing_ratio = 0;
+        int shift_clock = 0;
 
         s8 sample() const {
             if (!enabled) return 0;
-            return (lfsr & 1) ? volume : -volume;
+            return (lfsr & 1) ? -volume : volume;
         }
     };
 
     SquareChannel ch1_, ch2_;
     WaveChannel ch3_;
     NoiseChannel ch4_;
+
+
+    int frame_seq_counter_ = 0;
+    int frame_seq_step_ = 0;
+    static constexpr int FRAME_SEQ_PERIOD = CPU_FREQ / 512;
+
+
+    int master_vol_left_ = 7;
+    int master_vol_right_ = 7;
+    u8 psg_enable_left_ = 0;
+    u8 psg_enable_right_ = 0;
+
+
+    int psg_volume_shift_ = 2;
 
     int cycle_counter_ = 0;
     static constexpr int SAMPLE_RATE = 32768;
@@ -130,6 +153,8 @@ private:
     int sample_write_pos_ = 0;
     int sample_read_pos_ = 0;
 
+    void tick_channels(int cycles);
+    void tick_frame_sequencer(int cycles);
     void mix_sample();
 
     static void audio_callback(void* userdata, u8* stream, int len);

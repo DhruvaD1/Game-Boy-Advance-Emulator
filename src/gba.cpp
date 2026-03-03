@@ -17,6 +17,7 @@ GBA::GBA() {
 
     ppu_.set_bus(&bus_);
     apu_.set_bus(&bus_);
+    apu_.set_dma(&dma_);
     dma_.set_bus(&bus_);
     dma_.set_interrupt(&interrupt_);
     timer_.set_bus(&bus_);

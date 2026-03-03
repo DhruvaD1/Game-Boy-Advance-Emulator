@@ -20,6 +20,7 @@ public:
     void write_register(u32 reg, u16 val);
 
     void trigger(DmaTiming timing);
+    void trigger_fifo(int fifo_id);
 
     void check_immediate();
 

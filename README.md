@@ -1,13 +1,41 @@
 # GBA Emulator
 
-(Need to fix sprite rendering to get this to work fully)
-
-Have only tested this in Pokemon Emerald
-
-An almost working Game Boy Advance emulator.
-![Pokemon Emerald gameplay](screenshots/gameplay.png)
-![Talking](screenshots/dialogue.png)
+Game Boy Advance emulator.
+![Pokemon Emerald title screen](screenshots/emerald.png)
+![Dialogue](screenshots/house.png)
 ![Battle](screenshots/battle.png)
+
+## Components
+
+- **ARM7TDMI CPU**: ARM and Thumb instruction sets
+- **PPU**:background modes 0-2, affine backgrounds, sprites, blending, windowing
+- **APU**: 4 PSG channels (square, wave, noise) + 2 DMA FIFO channels
+- **DMA**:4 DMA channels with HBlank, VBlank, and FIFO triggers
+- **Timers**: 4 cascading timers with overflow interrupts
+- **Interrupts**: VBlank, HBlank, VCount, timer, DMA
+- **Memory bus**: ROM, EWRAM, IWRAM, VRAM, OAM, palette RAM, I/O
+- **Save support**: Flash 128K save emulation
+- **Sound**: SDL2 audio output
+- **RTC**: real-time clock
+
+## Speed Controls
+
+Use the menu bar at the top of the window or keyboard shortcuts:
+
+| Key | Action |
+|-----|--------|
+| Tab | Cycle through speed options |
+| 1 | 1x (normal) |
+| 2 | 2x |
+| 3 | 4x |
+| 4 | 8x |
+| 5 | Unlimited |
+
+## Requirements
+
+- C++20
+- SDL2
+- Linux
 
 ## Build
 

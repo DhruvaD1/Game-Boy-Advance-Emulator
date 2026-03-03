@@ -346,7 +346,7 @@ void HleBios::swi_lz77_uncomp_wram() {
                 offset++;
 
                 for (u32 j = 0; j < length && written < decomp_size; j++) {
-                    u8 val = bus_->read8(dst - offset + j);
+                    u8 val = bus_->read8(dst - offset);
                     bus_->write8(dst, val);
                     dst++;
                     written++;
@@ -446,12 +446,12 @@ void HleBios::swi_huff_uncomp() {
 
             u32 child_offset;
             if (right) {
-                child_offset = (node_offset & ~1u) + (node & 0x3F) * 2 + 4;
+                child_offset = (node_offset & ~1u) + (node & 0x3F) * 2 + 3;
             } else {
                 child_offset = (node_offset & ~1u) + (node & 0x3F) * 2 + 2;
             }
 
-            bool is_leaf = right ? (node & 0x80) : (node & 0x40);
+            bool is_leaf = right ? (node & 0x40) : (node & 0x80);
             if (is_leaf) {
                 u8 val = bus_->read8(child_offset);
                 buffer |= val << buffer_bits;

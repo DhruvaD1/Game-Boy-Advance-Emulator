@@ -78,6 +78,40 @@ void DMA::trigger(DmaTiming timing) {
     }
 }
 
+void DMA::trigger_fifo(int fifo_id) {
+
+    int ch = fifo_id + 1;
+    auto& c = channels_[ch];
+    if (!c.enabled) return;
+    int timing = (c.control >> 12) & 3;
+    if (timing != 3) return;
+
+    active_ = true;
+
+    int src_mode = (c.control >> 7) & 3;
+    int src_step;
+    switch (src_mode) {
+        case 0: case 3: src_step = 4; break;
+        case 1: src_step = -4; break;
+        case 2: src_step = 0; break;
+        default: src_step = 4; break;
+    }
+
+    u32 src = c.internal_src;
+    u32 dst = c.internal_dst;
+
+
+    for (int i = 0; i < 4; i++) {
+        u32 val = bus_->read32(src & ~3u);
+        bus_->write32(dst & ~3u, val);
+        src += src_step;
+    }
+
+    c.internal_src = src;
+
+    active_ = false;
+}
+
 void DMA::check_immediate() {
     for (int ch = 0; ch < 4; ch++) {
         auto& c = channels_[ch];
