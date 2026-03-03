@@ -18,6 +18,11 @@ Game Boy Advance emulator.
 - **Sound**: SDL2 audio output
 - **RTC**: real-time clock
 
+## Work to do
+
+Wamt to add save states amd Game Shark Cheat support
+
+
 ## Speed Controls
 
 Use the menu bar at the top of the window or keyboard shortcuts:
