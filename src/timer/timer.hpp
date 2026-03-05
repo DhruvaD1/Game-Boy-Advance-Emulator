@@ -1,6 +1,7 @@
 // 4 hardware timers with cascade support
 #pragma once
 #include "types.hpp"
+#include <cstdio>
 
 class Bus;
 class InterruptController;
@@ -15,6 +16,9 @@ public:
     void tick(int cycles);
     u16 read(u32 reg);
     void write(u32 reg, u16 val);
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
 private:
     Bus* bus_ = nullptr;

@@ -3,6 +3,7 @@
 #include "types.hpp"
 #include <array>
 #include <string>
+#include <cstdio>
 
 class Flash {
 public:
@@ -15,6 +16,9 @@ public:
     void save(const std::string& path);
 
     void set_save_path(const std::string& path) { save_path_ = path; }
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
 private:
     std::array<u8, FLASH_SIZE> data_{};

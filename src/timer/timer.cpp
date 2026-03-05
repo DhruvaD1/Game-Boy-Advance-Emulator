@@ -81,3 +81,13 @@ void Timer::write(u32 reg, u16 val) {
         memcpy(&bus_->io[reg], &val, 2);
     }
 }
+
+bool Timer::save_state(FILE* f) const {
+    if (fwrite(timers_, sizeof(timers_), 1, f) != 1) return false;
+    return true;
+}
+
+bool Timer::load_state(FILE* f) {
+    if (fread(timers_, sizeof(timers_), 1, f) != 1) return false;
+    return true;
+}

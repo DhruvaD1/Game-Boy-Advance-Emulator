@@ -1,12 +1,11 @@
-// joypad input — KEYINPUT register
 #pragma once
 #include "types.hpp"
 #include <SDL.h>
+#include <string>
 
 class Input {
 public:
-    void update(const u8* keyboard_state);
-    u16 read_keyinput() const { return keyinput_; }
+    static constexpr int NUM_BUTTONS = 10;
 
     enum Button : u16 {
         BTN_A      = 1 << 0,
@@ -21,6 +20,19 @@ public:
         BTN_L      = 1 << 9,
     };
 
+    Input();
+
+    void update(const u8* keyboard_state);
+    u16 read_keyinput() const { return keyinput_; }
+
+    void set_key(int button, SDL_Scancode sc);
+    SDL_Scancode get_key(int button) const;
+    static const char* button_name(int i);
+
+    bool save_config(const std::string& path) const;
+    bool load_config(const std::string& path);
+
 private:
     u16 keyinput_ = 0x03FF;
+    SDL_Scancode key_map_[NUM_BUTTONS];
 };

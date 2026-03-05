@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <cstdio>
 
 class PPU;
 class APU;
@@ -43,6 +44,9 @@ public:
     u16 io_read16(u32 addr);
     void io_write8(u32 addr, u8 val);
     void io_write16(u32 addr, u16 val);
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
     std::array<u8, IO_SIZE> io{};
 

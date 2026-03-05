@@ -349,3 +349,47 @@ void APU::audio_callback(void* userdata, u8* stream, int len) {
     int samples = len / 4;
     apu->fill_buffer(reinterpret_cast<s16*>(stream), samples);
 }
+
+bool APU::save_state(FILE* f) const {
+    if (fwrite(&fifo_a_, sizeof(fifo_a_), 1, f) != 1) return false;
+    if (fwrite(&fifo_b_, sizeof(fifo_b_), 1, f) != 1) return false;
+    if (fwrite(&ch1_, sizeof(ch1_), 1, f) != 1) return false;
+    if (fwrite(&ch2_, sizeof(ch2_), 1, f) != 1) return false;
+    if (fwrite(&ch3_, sizeof(ch3_), 1, f) != 1) return false;
+    if (fwrite(&ch4_, sizeof(ch4_), 1, f) != 1) return false;
+    if (fwrite(&frame_seq_counter_, sizeof(frame_seq_counter_), 1, f) != 1) return false;
+    if (fwrite(&frame_seq_step_, sizeof(frame_seq_step_), 1, f) != 1) return false;
+    if (fwrite(&master_vol_left_, sizeof(master_vol_left_), 1, f) != 1) return false;
+    if (fwrite(&master_vol_right_, sizeof(master_vol_right_), 1, f) != 1) return false;
+    if (fwrite(&psg_enable_left_, sizeof(psg_enable_left_), 1, f) != 1) return false;
+    if (fwrite(&psg_enable_right_, sizeof(psg_enable_right_), 1, f) != 1) return false;
+    if (fwrite(&psg_volume_shift_, sizeof(psg_volume_shift_), 1, f) != 1) return false;
+    if (fwrite(&cycle_counter_, sizeof(cycle_counter_), 1, f) != 1) return false;
+    return true;
+}
+
+bool APU::load_state(FILE* f) {
+    SDL_LockAudioDevice(audio_device_);
+
+    if (fread(&fifo_a_, sizeof(fifo_a_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&fifo_b_, sizeof(fifo_b_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&ch1_, sizeof(ch1_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&ch2_, sizeof(ch2_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&ch3_, sizeof(ch3_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&ch4_, sizeof(ch4_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&frame_seq_counter_, sizeof(frame_seq_counter_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&frame_seq_step_, sizeof(frame_seq_step_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&master_vol_left_, sizeof(master_vol_left_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&master_vol_right_, sizeof(master_vol_right_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&psg_enable_left_, sizeof(psg_enable_left_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&psg_enable_right_, sizeof(psg_enable_right_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&psg_volume_shift_, sizeof(psg_volume_shift_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+    if (fread(&cycle_counter_, sizeof(cycle_counter_), 1, f) != 1) { SDL_UnlockAudioDevice(audio_device_); return false; }
+
+    sample_write_pos_ = 0;
+    sample_read_pos_ = 0;
+    sample_buffer_.fill(0);
+
+    SDL_UnlockAudioDevice(audio_device_);
+    return true;
+}

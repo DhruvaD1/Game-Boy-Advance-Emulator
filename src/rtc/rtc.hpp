@@ -1,11 +1,15 @@
 // real-time clock (GPIO-based, for Pokemon)
 #pragma once
 #include "types.hpp"
+#include <cstdio>
 
 class RTC {
 public:
     u8 read(u32 offset);
     void write(u32 offset, u8 val);
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
 private:
     u8 data_reg_ = 0;

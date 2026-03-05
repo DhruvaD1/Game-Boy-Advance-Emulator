@@ -323,6 +323,40 @@ void ARM7TDMI::flush_pipeline() {
     last_fetch_addr_ = 0xFFFFFFFF;
 }
 
+bool ARM7TDMI::save_state(FILE* f) const {
+    if (fwrite(regs_.data(), sizeof(regs_), 1, f) != 1) return false;
+    if (fwrite(fiq_regs_.data(), sizeof(fiq_regs_), 1, f) != 1) return false;
+    if (fwrite(svc_regs_.data(), sizeof(svc_regs_), 1, f) != 1) return false;
+    if (fwrite(abt_regs_.data(), sizeof(abt_regs_), 1, f) != 1) return false;
+    if (fwrite(irq_regs_.data(), sizeof(irq_regs_), 1, f) != 1) return false;
+    if (fwrite(und_regs_.data(), sizeof(und_regs_), 1, f) != 1) return false;
+    if (fwrite(usr_regs_.data(), sizeof(usr_regs_), 1, f) != 1) return false;
+    if (fwrite(&cpsr_, sizeof(cpsr_), 1, f) != 1) return false;
+    if (fwrite(spsr_.data(), sizeof(spsr_), 1, f) != 1) return false;
+    if (fwrite(pipeline, sizeof(pipeline), 1, f) != 1) return false;
+    if (fwrite(&pipeline_valid_, sizeof(pipeline_valid_), 1, f) != 1) return false;
+    if (fwrite(&last_fetch_addr_, sizeof(last_fetch_addr_), 1, f) != 1) return false;
+    if (fwrite(&halted, sizeof(halted), 1, f) != 1) return false;
+    return true;
+}
+
+bool ARM7TDMI::load_state(FILE* f) {
+    if (fread(regs_.data(), sizeof(regs_), 1, f) != 1) return false;
+    if (fread(fiq_regs_.data(), sizeof(fiq_regs_), 1, f) != 1) return false;
+    if (fread(svc_regs_.data(), sizeof(svc_regs_), 1, f) != 1) return false;
+    if (fread(abt_regs_.data(), sizeof(abt_regs_), 1, f) != 1) return false;
+    if (fread(irq_regs_.data(), sizeof(irq_regs_), 1, f) != 1) return false;
+    if (fread(und_regs_.data(), sizeof(und_regs_), 1, f) != 1) return false;
+    if (fread(usr_regs_.data(), sizeof(usr_regs_), 1, f) != 1) return false;
+    if (fread(&cpsr_, sizeof(cpsr_), 1, f) != 1) return false;
+    if (fread(spsr_.data(), sizeof(spsr_), 1, f) != 1) return false;
+    if (fread(pipeline, sizeof(pipeline), 1, f) != 1) return false;
+    if (fread(&pipeline_valid_, sizeof(pipeline_valid_), 1, f) != 1) return false;
+    if (fread(&last_fetch_addr_, sizeof(last_fetch_addr_), 1, f) != 1) return false;
+    if (fread(&halted, sizeof(halted), 1, f) != 1) return false;
+    return true;
+}
+
 int ARM7TDMI::execute_arm(u32 instr) {
     return arm::execute(*this, instr);
 }

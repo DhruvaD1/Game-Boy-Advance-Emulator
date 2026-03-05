@@ -2,6 +2,8 @@
 #include "gba.hpp"
 #include <cstring>
 #include <cstdio>
+#include <sys/stat.h>
+#include <libgen.h>
 
 GBA::GBA() {
 
@@ -28,6 +30,7 @@ GBA::GBA() {
     bios_.set_bus(&bus_);
 
     bus_.has_rtc = true;
+    cheat_.set_bus(&bus_);
 }
 
 bool GBA::load_rom(const std::string& path) {
@@ -50,9 +53,76 @@ bool GBA::load_rom(const std::string& path) {
 
     apu_.init_audio();
 
+    std::string path_copy = path;
+    char* dir = dirname(&path_copy[0]);
+    std::string rom_dir = dir;
+
+    std::string rom_name = path;
+    auto slash = rom_name.rfind('/');
+    if (slash != std::string::npos) rom_name = rom_name.substr(slash + 1);
+    auto dot2 = rom_name.rfind('.');
+    if (dot2 != std::string::npos) rom_name = rom_name.substr(0, dot2);
+
+    cheats_path_ = rom_dir + "/cheats/" + rom_name + ".txt";
+    cheat_.load(cheats_path_);
+
     printf("Save file: %s\n", save_path_.c_str());
+    printf("Cheats file: %s\n", cheats_path_.c_str());
     printf("Controls: Arrows=D-pad, X=A, Z=B, Enter=Start, RShift=Select, A=L, S=R\n");
     return true;
+}
+
+bool GBA::reset_and_load_rom(const std::string& path) {
+    flash_.save(save_path_);
+
+    apu_.shutdown_audio();
+
+    bus_.ewram.fill(0);
+    bus_.iwram.fill(0);
+    bus_.palette.fill(0);
+    bus_.vram.fill(0);
+    bus_.oam.fill(0);
+    bus_.io.fill(0);
+    bus_.install_bios_stub();
+    bus_.last_read = 0;
+
+    ppu_ = PPU();
+    ppu_.set_bus(&bus_);
+    bus_.set_ppu(&ppu_);
+
+    apu_ = APU();
+    apu_.set_bus(&bus_);
+    apu_.set_dma(&dma_);
+    bus_.set_apu(&apu_);
+
+    dma_ = DMA();
+    dma_.set_bus(&bus_);
+    dma_.set_interrupt(&interrupt_);
+    bus_.set_dma(&dma_);
+
+    timer_ = Timer();
+    timer_.set_bus(&bus_);
+    timer_.set_interrupt(&interrupt_);
+    timer_.set_apu(&apu_);
+    bus_.set_timer(&timer_);
+
+    interrupt_ = InterruptController();
+    interrupt_.set_bus(&bus_);
+    bus_.set_interrupt(&interrupt_);
+
+    flash_ = Flash();
+    bus_.set_flash(&flash_);
+
+    rtc_ = RTC();
+    bus_.set_rtc(&rtc_);
+    bus_.has_rtc = true;
+
+    cheat_ = CheatEngine();
+    cheat_.set_bus(&bus_);
+
+    frame_num_ = 0;
+
+    return load_rom(path);
 }
 
 void GBA::handle_hle_swi() {
@@ -139,9 +209,8 @@ void GBA::run_scanline(int line) {
 
 void GBA::run_frame() {
 
-    static int frame_num = 0;
-    frame_num++;
-    if (frame_num == 1) {
+    frame_num_++;
+    if (frame_num_ == 1) {
         ppu_.set_vblank(true);
         for (int line = 0x7E; line < (int)TOTAL_LINES; line++) {
             run_scanline(line);
@@ -158,6 +227,7 @@ void GBA::run_frame() {
     }
 
     ppu_.set_vblank(true);
+    cheat_.apply();
 
     if (ppu_.vblank_irq_enabled()) {
         interrupt_.request_irq(IRQ_VBLANK);
@@ -170,9 +240,104 @@ void GBA::run_frame() {
     }
 }
 
+std::string GBA::state_path(int slot) const {
+    std::string path = save_path_;
+    auto dot = path.rfind('.');
+    if (dot != std::string::npos) path = path.substr(0, dot);
+    path += ".ss" + std::to_string(slot);
+    return path;
+}
+
+bool GBA::save_state(int slot) {
+    std::string path = state_path(slot);
+    FILE* f = fopen(path.c_str(), "wb");
+    if (!f) return false;
+
+
+    const char magic[4] = {'G', 'B', 'A', 'S'};
+    u32 version = 1;
+    u8 reserved[8] = {};
+    fwrite(magic, 4, 1, f);
+    fwrite(&version, 4, 1, f);
+    fwrite(reserved, 8, 1, f);
+
+    bool ok = true;
+    ok = ok && cpu_.save_state(f);
+    ok = ok && bus_.save_state(f);
+    ok = ok && ppu_.save_state(f);
+    ok = ok && apu_.save_state(f);
+    ok = ok && dma_.save_state(f);
+    ok = ok && timer_.save_state(f);
+    ok = ok && flash_.save_state(f);
+    ok = ok && rtc_.save_state(f);
+    ok = ok && (fwrite(&frame_num_, sizeof(frame_num_), 1, f) == 1);
+
+    fclose(f);
+    if (!ok) {
+        remove(path.c_str());
+        printf("Failed to save state to slot %d\n", slot);
+        return false;
+    }
+    printf("State saved to slot %d\n", slot);
+    return true;
+}
+
+bool GBA::load_state(int slot) {
+    std::string path = state_path(slot);
+    FILE* f = fopen(path.c_str(), "rb");
+    if (!f) {
+        printf("No save state in slot %d\n", slot);
+        return false;
+    }
+
+
+    char magic[4];
+    u32 version;
+    u8 reserved[8];
+    if (fread(magic, 4, 1, f) != 1 || fread(&version, 4, 1, f) != 1 || fread(reserved, 8, 1, f) != 1) {
+        fclose(f);
+        return false;
+    }
+    if (magic[0] != 'G' || magic[1] != 'B' || magic[2] != 'A' || magic[3] != 'S' || version != 1) {
+        fclose(f);
+        printf("Invalid save state file in slot %d\n", slot);
+        return false;
+    }
+
+    bool ok = true;
+    ok = ok && cpu_.load_state(f);
+    ok = ok && bus_.load_state(f);
+    ok = ok && ppu_.load_state(f);
+    ok = ok && apu_.load_state(f);
+    ok = ok && dma_.load_state(f);
+    ok = ok && timer_.load_state(f);
+    ok = ok && flash_.load_state(f);
+    ok = ok && rtc_.load_state(f);
+    ok = ok && (fread(&frame_num_, sizeof(frame_num_), 1, f) == 1);
+
+    fclose(f);
+    if (!ok) {
+        printf("Failed to load state from slot %d\n", slot);
+        return false;
+    }
+    printf("State loaded from slot %d\n", slot);
+    return true;
+}
+
 void GBA::save_game() {
     flash_.save(save_path_);
     printf("Game saved to %s\n", save_path_.c_str());
+}
+
+void GBA::save_cheats() {
+    if (!cheat_.dirty()) return;
+    std::string dir = cheats_path_;
+    auto slash = dir.rfind('/');
+    if (slash != std::string::npos) {
+        dir = dir.substr(0, slash);
+        mkdir(dir.c_str(), 0755);
+    }
+    cheat_.save(cheats_path_);
 }
 
 void GBA::dump_ppu_state() const {

@@ -442,6 +442,28 @@ u16 Bus::io_read16(u32 addr) {
     }
 }
 
+bool Bus::save_state(FILE* f) const {
+    if (fwrite(ewram.data(), sizeof(ewram), 1, f) != 1) return false;
+    if (fwrite(iwram.data(), sizeof(iwram), 1, f) != 1) return false;
+    if (fwrite(palette.data(), sizeof(palette), 1, f) != 1) return false;
+    if (fwrite(vram.data(), sizeof(vram), 1, f) != 1) return false;
+    if (fwrite(oam.data(), sizeof(oam), 1, f) != 1) return false;
+    if (fwrite(io.data(), sizeof(io), 1, f) != 1) return false;
+    if (fwrite(&last_read, sizeof(last_read), 1, f) != 1) return false;
+    return true;
+}
+
+bool Bus::load_state(FILE* f) {
+    if (fread(ewram.data(), sizeof(ewram), 1, f) != 1) return false;
+    if (fread(iwram.data(), sizeof(iwram), 1, f) != 1) return false;
+    if (fread(palette.data(), sizeof(palette), 1, f) != 1) return false;
+    if (fread(vram.data(), sizeof(vram), 1, f) != 1) return false;
+    if (fread(oam.data(), sizeof(oam), 1, f) != 1) return false;
+    if (fread(io.data(), sizeof(io), 1, f) != 1) return false;
+    if (fread(&last_read, sizeof(last_read), 1, f) != 1) return false;
+    return true;
+}
+
 void Bus::io_write8(u32 addr, u8 val) {
     u32 reg = addr & 0x3FF;
 

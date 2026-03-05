@@ -1,6 +1,7 @@
 // 4-channel DMA controller
 #pragma once
 #include "types.hpp"
+#include <cstdio>
 
 class Bus;
 class InterruptController;
@@ -25,6 +26,9 @@ public:
     void check_immediate();
 
     bool active() const { return active_; }
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
 private:
     Bus* bus_ = nullptr;

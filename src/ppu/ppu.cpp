@@ -3,9 +3,11 @@
 #include "memory/bus.hpp"
 #include <cstring>
 #include <algorithm>
+#include <cmath>
 
 PPU::PPU() {
     framebuffer_.fill(0);
+    build_lut();
 }
 
 u16 PPU::read_palette(u32 addr) const {
@@ -28,11 +30,72 @@ u8 PPU::read_vram8(u32 addr) const {
     return bus_->vram[offset];
 }
 
+bool PPU::save_state(FILE* f) const {
+    if (fwrite(framebuffer_.data(), sizeof(framebuffer_), 1, f) != 1) return false;
+    if (fwrite(&bg2_ref_x_, sizeof(bg2_ref_x_), 1, f) != 1) return false;
+    if (fwrite(&bg2_ref_y_, sizeof(bg2_ref_y_), 1, f) != 1) return false;
+    if (fwrite(&bg3_ref_x_, sizeof(bg3_ref_x_), 1, f) != 1) return false;
+    if (fwrite(&bg3_ref_y_, sizeof(bg3_ref_y_), 1, f) != 1) return false;
+    return true;
+}
+
+bool PPU::load_state(FILE* f) {
+    if (fread(framebuffer_.data(), sizeof(framebuffer_), 1, f) != 1) return false;
+    if (fread(&bg2_ref_x_, sizeof(bg2_ref_x_), 1, f) != 1) return false;
+    if (fread(&bg2_ref_y_, sizeof(bg2_ref_y_), 1, f) != 1) return false;
+    if (fread(&bg3_ref_x_, sizeof(bg3_ref_x_), 1, f) != 1) return false;
+    if (fread(&bg3_ref_y_, sizeof(bg3_ref_y_), 1, f) != 1) return false;
+    return true;
+}
+
+void PPU::build_lut() {
+    for (int c = 0; c < 32768; c++) {
+        int r5 = c & 0x1F;
+        int g5 = (c >> 5) & 0x1F;
+        int b5 = (c >> 10) & 0x1F;
+
+        u8 r8, g8, b8;
+        if (!color_correct_) {
+            r8 = r5 << 3;
+            g8 = g5 << 3;
+            b8 = b5 << 3;
+        } else {
+            double r = r5 / 31.0;
+            double g = g5 / 31.0;
+            double b = b5 / 31.0;
+
+            r = std::pow(r, 4.0);
+            g = std::pow(g, 4.0);
+            b = std::pow(b, 4.0);
+
+            double nr = 0.80 * r + 0.20 * g;
+            double ng = 0.15 * r + 0.75 * g + 0.10 * b;
+            double nb = 0.15 * g + 0.85 * b;
+
+            nr = std::pow(nr, 1.0 / 2.2);
+            ng = std::pow(ng, 1.0 / 2.2);
+            nb = std::pow(nb, 1.0 / 2.2);
+
+            if (nr > 1.0) nr = 1.0;
+            if (ng > 1.0) ng = 1.0;
+            if (nb > 1.0) nb = 1.0;
+
+            r8 = (u8)(nr * 255.0 + 0.5);
+            g8 = (u8)(ng * 255.0 + 0.5);
+            b8 = (u8)(nb * 255.0 + 0.5);
+        }
+
+        color_lut_[c] = r8 | (g8 << 8) | (b8 << 16) | 0xFF000000u;
+    }
+}
+
+void PPU::set_color_correction(bool on) {
+    color_correct_ = on;
+    build_lut();
+}
+
 u32 PPU::rgb555_to_rgb888(u16 color) const {
-    u8 r = (color & 0x1F) << 3;
-    u8 g = ((color >> 5) & 0x1F) << 3;
-    u8 b = ((color >> 10) & 0x1F) << 3;
-    return (r) | (g << 8) | (b << 16) | 0xFF000000;
+    return color_lut_[color & 0x7FFF];
 }
 
 void PPU::set_vcount(u16 v) {

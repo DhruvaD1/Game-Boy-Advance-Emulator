@@ -3,6 +3,7 @@
 #include "types.hpp"
 #include <array>
 #include <functional>
+#include <cstdio>
 
 class Bus;
 
@@ -87,6 +88,9 @@ public:
     void write32(u32 addr, u32 val);
 
     void flush_pipeline();
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
 
     bool halted = false;
 

@@ -24,6 +24,9 @@ public:
 
     void fill_buffer(s16* buffer, int samples);
 
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
+
 private:
     Bus* bus_ = nullptr;
     DMA* dma_ = nullptr;

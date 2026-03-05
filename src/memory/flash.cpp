@@ -130,3 +130,22 @@ void Flash::save(const std::string& path) {
         file.write(reinterpret_cast<const char*>(data_.data()), FLASH_SIZE);
     }
 }
+
+bool Flash::save_state(FILE* f) const {
+    if (fwrite(data_.data(), sizeof(data_), 1, f) != 1) return false;
+    int state_int = static_cast<int>(state_);
+    if (fwrite(&state_int, sizeof(state_int), 1, f) != 1) return false;
+    if (fwrite(&current_bank_, sizeof(current_bank_), 1, f) != 1) return false;
+    if (fwrite(&id_mode_, sizeof(id_mode_), 1, f) != 1) return false;
+    return true;
+}
+
+bool Flash::load_state(FILE* f) {
+    if (fread(data_.data(), sizeof(data_), 1, f) != 1) return false;
+    int state_int;
+    if (fread(&state_int, sizeof(state_int), 1, f) != 1) return false;
+    state_ = static_cast<State>(state_int);
+    if (fread(&current_bank_, sizeof(current_bank_), 1, f) != 1) return false;
+    if (fread(&id_mode_, sizeof(id_mode_), 1, f) != 1) return false;
+    return true;
+}

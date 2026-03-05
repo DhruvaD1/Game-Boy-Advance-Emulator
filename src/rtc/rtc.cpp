@@ -150,3 +150,36 @@ void RTC::execute_command() {
             break;
     }
 }
+
+bool RTC::save_state(FILE* f) const {
+    if (fwrite(&data_reg_, sizeof(data_reg_), 1, f) != 1) return false;
+    if (fwrite(&direction_reg_, sizeof(direction_reg_), 1, f) != 1) return false;
+    if (fwrite(&control_reg_, sizeof(control_reg_), 1, f) != 1) return false;
+    int state_int = static_cast<int>(state_);
+    if (fwrite(&state_int, sizeof(state_int), 1, f) != 1) return false;
+    if (fwrite(&bit_count_, sizeof(bit_count_), 1, f) != 1) return false;
+    if (fwrite(&command_, sizeof(command_), 1, f) != 1) return false;
+    if (fwrite(serial_data_, sizeof(serial_data_), 1, f) != 1) return false;
+    if (fwrite(&data_idx_, sizeof(data_idx_), 1, f) != 1) return false;
+    if (fwrite(&data_len_, sizeof(data_len_), 1, f) != 1) return false;
+    if (fwrite(&cs_last_, sizeof(cs_last_), 1, f) != 1) return false;
+    if (fwrite(&sck_last_, sizeof(sck_last_), 1, f) != 1) return false;
+    return true;
+}
+
+bool RTC::load_state(FILE* f) {
+    if (fread(&data_reg_, sizeof(data_reg_), 1, f) != 1) return false;
+    if (fread(&direction_reg_, sizeof(direction_reg_), 1, f) != 1) return false;
+    if (fread(&control_reg_, sizeof(control_reg_), 1, f) != 1) return false;
+    int state_int;
+    if (fread(&state_int, sizeof(state_int), 1, f) != 1) return false;
+    state_ = static_cast<State>(state_int);
+    if (fread(&bit_count_, sizeof(bit_count_), 1, f) != 1) return false;
+    if (fread(&command_, sizeof(command_), 1, f) != 1) return false;
+    if (fread(serial_data_, sizeof(serial_data_), 1, f) != 1) return false;
+    if (fread(&data_idx_, sizeof(data_idx_), 1, f) != 1) return false;
+    if (fread(&data_len_, sizeof(data_len_), 1, f) != 1) return false;
+    if (fread(&cs_last_, sizeof(cs_last_), 1, f) != 1) return false;
+    if (fread(&sck_last_, sizeof(sck_last_), 1, f) != 1) return false;
+    return true;
+}

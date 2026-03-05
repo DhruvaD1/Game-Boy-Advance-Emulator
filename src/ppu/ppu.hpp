@@ -2,6 +2,7 @@
 #pragma once
 #include "types.hpp"
 #include <array>
+#include <cstdio>
 
 class Bus;
 
@@ -25,9 +26,19 @@ public:
     bool vcount_irq_enabled() const;
     u8   vcount_target() const;
 
+    void set_color_correction(bool on);
+    bool color_correction() const { return color_correct_; }
+
+    bool save_state(FILE* f) const;
+    bool load_state(FILE* f);
+
 private:
     Bus* bus_ = nullptr;
     std::array<u32, GBA_WIDTH * GBA_HEIGHT> framebuffer_{};
+
+    u32 color_lut_[32768];
+    bool color_correct_ = false;
+    void build_lut();
 
     std::array<u16, 240> bg_line_[4];
     std::array<u8, 240>  bg_priority_[4];

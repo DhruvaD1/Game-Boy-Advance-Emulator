@@ -187,3 +187,15 @@ void DMA::run_channel(int ch) {
 
     active_ = false;
 }
+
+bool DMA::save_state(FILE* f) const {
+    if (fwrite(channels_, sizeof(channels_), 1, f) != 1) return false;
+    if (fwrite(&active_, sizeof(active_), 1, f) != 1) return false;
+    return true;
+}
+
+bool DMA::load_state(FILE* f) {
+    if (fread(channels_, sizeof(channels_), 1, f) != 1) return false;
+    if (fread(&active_, sizeof(active_), 1, f) != 1) return false;
+    return true;
+}
