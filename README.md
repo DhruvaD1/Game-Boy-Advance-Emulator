@@ -4,7 +4,7 @@ Game Boy Advance emulator.
 ![Pokemon Emerald title screen](screenshots/emerald.png)
 ![Dialogue](screenshots/house.png)
 ![Battle](screenshots/battle.png)
-![Battle](screenshots/battle.png)
+![Battle](screenshots/cheats.png)
 
 
 ## Components
