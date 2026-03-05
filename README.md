@@ -4,6 +4,8 @@ Game Boy Advance emulator.
 ![Pokemon Emerald title screen](screenshots/emerald.png)
 ![Dialogue](screenshots/house.png)
 ![Battle](screenshots/battle.png)
+![Battle](screenshots/battle.png)
+
 
 ## Components
 
@@ -17,11 +19,7 @@ Game Boy Advance emulator.
 - **Save support**: Flash 128K save emulation
 - **Sound**: SDL2 audio output
 - **RTC**: real-time clock
-
-## Work to do
-
-Wamt to add save states amd Game Shark Cheat support
-
+- **Cheats**: Gameshark cheats support
 
 ## Speed Controls
 
@@ -35,6 +33,10 @@ Use the menu bar at the top of the window or keyboard shortcuts:
 | 3 | 4x |
 | 4 | 8x |
 | 5 | Unlimited |
+
+## Gameshark Cheats
+
+Any Gameshark cheat is supported. There are many gameshark cheats that you can use to make the game easier, harder, game breaking, etc. Be careful using these since it could courrupt your save if used.
 
 ## Requirements
 
