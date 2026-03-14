@@ -30,6 +30,7 @@ enum MenuAction {
     MENU_LOAD_STATE_5 = 34,
     MENU_CHEATS = 40,
     MENU_COLOR_CORRECT = 50,
+    MENU_BIOS_INTRO = 51,
 };
 
 class MenuBar {
@@ -67,6 +68,7 @@ public:
 
     void set_speed_check(int speed_index);
     void set_color_correct_check(bool on);
+    void set_bios_intro_check(bool on);
 
     void show_notification(const char* text);
     void tick_notification();

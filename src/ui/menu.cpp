@@ -52,6 +52,7 @@ void MenuBar::init(SDL_Renderer* renderer) {
     Menu display_menu;
     display_menu.label = "Display";
     display_menu.items.push_back({"Color Correction", MENU_COLOR_CORRECT, false, false});
+    display_menu.items.push_back({"BIOS Intro", MENU_BIOS_INTRO, true, false});
     menus_.push_back(display_menu);
 
 
@@ -86,6 +87,16 @@ void MenuBar::set_color_correct_check(bool on) {
     auto& items = menus_[3].items;
     for (auto& item : items) {
         if (item.id == MENU_COLOR_CORRECT) {
+            item.checked = on;
+        }
+    }
+}
+
+void MenuBar::set_bios_intro_check(bool on) {
+    if (menus_.size() < 4) return;
+    auto& items = menus_[3].items;
+    for (auto& item : items) {
+        if (item.id == MENU_BIOS_INTRO) {
             item.checked = on;
         }
     }

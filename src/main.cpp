@@ -70,6 +70,10 @@ int main(int argc, char* argv[]) {
 
     std::string rom_dir = get_rom_dir(argv[1]);
 
+    if (!gba.load_bios(rom_dir + "/gba_bios.bin")) {
+        gba.load_bios("gba_bios.bin");
+    }
+
     if (!gba.load_rom(argv[1])) {
         fprintf(stderr, "Failed to load ROM\n");
         SDL_DestroyTexture(texture);
@@ -216,6 +220,21 @@ int main(int argc, char* argv[]) {
             case MENU_COLOR_CORRECT:
                 gba.set_color_correction(!gba.color_correction());
                 menu.set_color_correct_check(gba.color_correction());
+                break;
+            case MENU_BIOS_INTRO:
+                if (!gba.bios_intro()) {
+                    gba.set_bios_intro(true);
+                    menu.set_bios_intro_check(true);
+                    gba.reset_and_load_rom(gba.rom_path());
+                    menu.set_cheat_engine(&gba.cheat_engine(), gba.cheats_path());
+                    menu.show_notification("BIOS intro enabled");
+                    frame_count = 0;
+                    fps_timer = std::chrono::high_resolution_clock::now();
+                } else {
+                    gba.set_bios_intro(false);
+                    menu.set_bios_intro_check(false);
+                    menu.show_notification("BIOS intro disabled");
+                }
                 break;
             case MENU_SPEED_1X: case MENU_SPEED_2X: case MENU_SPEED_4X:
             case MENU_SPEED_8X: case MENU_SPEED_MAX:

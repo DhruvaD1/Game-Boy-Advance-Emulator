@@ -58,6 +58,9 @@ public:
     std::array<u8, OAM_SIZE>     oam{};
 
     void install_bios_stub();
+    bool load_bios(const std::string& path);
+    bool has_real_bios() const { return has_real_bios_; }
+    void restore_bios();
 
     std::vector<u8> rom;
     u32 rom_size = 0;
@@ -79,4 +82,7 @@ private:
     void detect_save_type();
     bool has_flash_ = false;
     bool has_sram_ = false;
+
+    std::vector<u8> real_bios_data_;
+    bool has_real_bios_ = false;
 };

@@ -14,6 +14,7 @@ public:
     void render_scanline(int line);
 
     const u32* get_framebuffer() const { return framebuffer_.data(); }
+    u32* framebuffer_data() { return framebuffer_.data(); }
 
     void set_vcount(u16 v);
     u16  get_vcount() const;

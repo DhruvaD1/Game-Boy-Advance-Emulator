@@ -101,6 +101,38 @@ void Bus::install_bios_stub() {
     printf("BIOS: Installed minimal stub (IRQ handler at 0x128, SWI at 0x140)\n");
 }
 
+bool Bus::load_bios(const std::string& path) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) return false;
+
+    auto size = file.tellg();
+    if (size != BIOS_SIZE) {
+        fprintf(stderr, "BIOS: Invalid size (%d bytes, expected %d)\n", (int)size, BIOS_SIZE);
+        return false;
+    }
+
+    real_bios_data_.resize(BIOS_SIZE);
+    file.seekg(0);
+    file.read(reinterpret_cast<char*>(real_bios_data_.data()), BIOS_SIZE);
+    if (!file) {
+        real_bios_data_.clear();
+        return false;
+    }
+
+    memcpy(bios.data(), real_bios_data_.data(), BIOS_SIZE);
+    has_real_bios_ = true;
+    printf("BIOS: Loaded real BIOS from %s\n", path.c_str());
+    return true;
+}
+
+void Bus::restore_bios() {
+    if (has_real_bios_ && real_bios_data_.size() == BIOS_SIZE) {
+        memcpy(bios.data(), real_bios_data_.data(), BIOS_SIZE);
+    } else {
+        install_bios_stub();
+    }
+}
+
 bool Bus::load_rom(const std::string& path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
