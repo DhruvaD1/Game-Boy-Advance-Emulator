@@ -6,6 +6,7 @@ Game Boy Advance emulator.
 ![Battle](screenshots/battle.png)
 ![Battle](screenshots/cheats.png)
 
+walk through walls cheat
 
 ## Components
 
