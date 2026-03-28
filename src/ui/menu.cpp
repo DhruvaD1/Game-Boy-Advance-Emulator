@@ -53,6 +53,11 @@ void MenuBar::init(SDL_Renderer* renderer) {
     display_menu.label = "Display";
     display_menu.items.push_back({"Color Correction", MENU_COLOR_CORRECT, false, false});
     display_menu.items.push_back({"BIOS Intro", MENU_BIOS_INTRO, true, false});
+    display_menu.items.push_back({"", 0, false, true});
+    display_menu.items.push_back({"1x  (240x160)",  MENU_SCALE_1X, false, false});
+    display_menu.items.push_back({"2x  (480x320)",  MENU_SCALE_2X, false, false});
+    display_menu.items.push_back({"3x  (720x480)",  MENU_SCALE_3X, true,  false});
+    display_menu.items.push_back({"4x  (960x640)",  MENU_SCALE_4X, false, false});
     menus_.push_back(display_menu);
 
 
@@ -98,6 +103,16 @@ void MenuBar::set_bios_intro_check(bool on) {
     for (auto& item : items) {
         if (item.id == MENU_BIOS_INTRO) {
             item.checked = on;
+        }
+    }
+}
+
+void MenuBar::set_scale_check(int scale) {
+    if (menus_.size() < 4) return;
+    auto& items = menus_[3].items;
+    for (auto& item : items) {
+        if (item.id >= MENU_SCALE_1X && item.id <= MENU_SCALE_4X) {
+            item.checked = (item.id == MENU_SCALE_1X + scale - 1);
         }
     }
 }

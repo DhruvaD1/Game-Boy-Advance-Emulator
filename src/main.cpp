@@ -236,6 +236,14 @@ int main(int argc, char* argv[]) {
                     menu.show_notification("BIOS intro disabled");
                 }
                 break;
+            case MENU_SCALE_1X: case MENU_SCALE_2X: case MENU_SCALE_3X: case MENU_SCALE_4X:
+            {
+                int scale = action - MENU_SCALE_1X + 1;
+                SDL_SetWindowSize(window, GBA_WIDTH * scale, GBA_HEIGHT * scale + 24);
+                SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                menu.set_scale_check(scale);
+                break;
+            }
             case MENU_SPEED_1X: case MENU_SPEED_2X: case MENU_SPEED_4X:
             case MENU_SPEED_8X: case MENU_SPEED_MAX:
                 speed_index = action - MENU_SPEED_1X;

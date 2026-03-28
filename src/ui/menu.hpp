@@ -31,6 +31,10 @@ enum MenuAction {
     MENU_CHEATS = 40,
     MENU_COLOR_CORRECT = 50,
     MENU_BIOS_INTRO = 51,
+    MENU_SCALE_1X = 60,
+    MENU_SCALE_2X = 61,
+    MENU_SCALE_3X = 62,
+    MENU_SCALE_4X = 63,
 };
 
 class MenuBar {
@@ -69,6 +73,7 @@ public:
     void set_speed_check(int speed_index);
     void set_color_correct_check(bool on);
     void set_bios_intro_check(bool on);
+    void set_scale_check(int scale);
 
     void show_notification(const char* text);
     void tick_notification();
