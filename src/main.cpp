@@ -6,6 +6,8 @@
 #include <chrono>
 #include <thread>
 #include <string>
+#include <ctime>
+#include <filesystem>
 #include <libgen.h>
 
 struct SpeedOption {
@@ -29,6 +31,22 @@ static std::string get_rom_dir(const char* rom_path) {
     std::string path_copy = rom_path;
     char* dir = dirname(&path_copy[0]);
     return std::string(dir);
+}
+
+static std::string save_screenshot(const u32* fb) {
+    std::error_code ec;
+    std::filesystem::create_directories("screenshots", ec);
+    std::time_t now = std::time(nullptr);
+    std::tm tm = *std::localtime(&now);
+    char path[160];
+    std::strftime(path, sizeof(path), "screenshots/shot_%Y%m%d_%H%M%S.bmp", &tm);
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(
+        (void*)fb, GBA_WIDTH, GBA_HEIGHT, 32,
+        GBA_WIDTH * sizeof(u32), SDL_PIXELFORMAT_ABGR8888);
+    if (!surf) return {};
+    int rc = SDL_SaveBMP(surf, path);
+    SDL_FreeSurface(surf);
+    return rc == 0 ? std::string(path) : std::string();
 }
 
 int main(int argc, char* argv[]) {
@@ -155,6 +173,16 @@ int main(int argc, char* argv[]) {
                     if (sym == SDLK_F6) {
                         gba.save_game();
                         menu.show_notification("Game saved");
+                    }
+                    if (sym == SDLK_F12) {
+                        std::string path = save_screenshot(gba.get_framebuffer());
+                        if (!path.empty()) {
+                            char msg[200];
+                            snprintf(msg, sizeof(msg), "Screenshot: %s", path.c_str());
+                            menu.show_notification(msg);
+                        } else {
+                            menu.show_notification("Screenshot failed");
+                        }
                     }
 
 

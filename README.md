@@ -73,3 +73,4 @@ make -j$(nproc)
 | S | R |
 | Tab | Turbo |
 | F5 | Save |
+| F12 | Screenshot (saved to `screenshots/`) |
